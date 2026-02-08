@@ -1,0 +1,34 @@
+networks: 
+  event-network:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: event-postgres
+    environment:
+      POSTGRES_DB: event_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - event-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: event-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Web Console
+    volumes:
+      - ./minio/data:/data
+    networks:
+      - event-network
