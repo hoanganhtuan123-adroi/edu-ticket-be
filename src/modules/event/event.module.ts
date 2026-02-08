@@ -7,12 +7,14 @@ import { Category } from '../../models/category.entity';
 import { User } from '../../models/user.entity';
 import { UserModule } from '../user/user.module';
 import { MinioModule } from '../../venders/minio/minio.module';
+import { TicketModule } from '../ticket/ticket.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Event, Category, User]),
     UserModule,
     MinioModule,
+    TicketModule,
   ],
   controllers: [EventController],
   providers: [EventService],

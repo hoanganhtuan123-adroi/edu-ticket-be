@@ -21,16 +21,16 @@ import { PaginationResponseDto } from '../../shared/dto/pagination-response.dto'
 
 @Controller('categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Roles(SystemRole.ORGANIZER, SystemRole.ADMIN)
   @Post('/create')
   async createCategory(
     @Body() createCategoryDto: CreateCategoryDto,
-  ): Promise<ApiResponse<CategoryResponseDto>> {
+  ): Promise<ApiResponse<any>> {
     try {
-      const result = await this.categoryService.createCategory(createCategoryDto);
-      return ApiResponse.success(result, 'Tạo danh mục thành công');
+      await this.categoryService.createCategory(createCategoryDto);
+      return ApiResponse.success(null,'Tạo danh mục thành công');
     } catch (error) {
       return ApiResponse.error(error.message || 'Tạo danh mục thất bại');
     }

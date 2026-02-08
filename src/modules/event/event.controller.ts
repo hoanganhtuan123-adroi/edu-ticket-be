@@ -103,6 +103,31 @@ export class EventController {
     }
   }
 
+  @Roles(SystemRole.ORGANIZER)
+  @Get('/my-events')
+  async getMyEvents(
+    @Query() filter: FilterEventDto,
+    @Request() req: any,
+  ): Promise<ApiResponse<PaginationResponseDto<EventResponseDto>>> {
+    try {
+      const organizerId = req.user.userId;
+      const result = await this.eventService.getEventsByOrganizer({
+        limit: filter.limit || 10,
+        offset: filter.offset || 0,
+        title: filter.title,
+        location: filter.location,
+        status: filter.status,
+        categoryId: filter.categoryId,
+        organizerId: organizerId,
+      });
+      return ApiResponse.success(result, 'Lấy danh sách sự kiện của bạn thành công');
+    } catch (error) {
+      return ApiResponse.error(
+        error.message || 'Lấy danh sách sự kiện của bạn thất bại',
+      );
+    }
+  }
+
   @Get('/:id')
   async getEventById(
     @Param('id') id: string,

@@ -13,9 +13,9 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
-  ) {}
+  ) { }
 
-  async createCategory(createCategoryDto: CreateCategoryDto): Promise<CategoryResponseDto> {
+  async createCategory(createCategoryDto: CreateCategoryDto): Promise<void> {
     try {
       // Check if category name already exists
       const existingCategory = await this.categoryRepo.findOne({
@@ -26,11 +26,8 @@ export class CategoryService {
         throw new ConflictException('Tên danh mục đã tồn tại');
       }
 
-      const newCategory = await this.categoryRepo.save(createCategoryDto);
+      await this.categoryRepo.save(createCategoryDto);
 
-      return plainToInstance(CategoryResponseDto, newCategory, {
-        excludeExtraneousValues: true,
-      });
     } catch (error) {
       throw error;
     }

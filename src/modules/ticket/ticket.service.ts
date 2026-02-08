@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TicketType as TicketTypeEntity, TicketStatus } from '../../models/enums';
 import { TicketType } from '../../models/ticket-type.entity';
 import { Event } from '../../models/event.entity';
-import { CreateTicketDto } from './dto/create.dto';
+import { CreateTicketDto, TicketTypeDto } from './dto/create.dto';
 import { UpdateTicketDto } from './dto/update.dto';
 import { TicketResponseDto, TicketDetailResponseDto } from './dto/response.dto';
 import { plainToInstance } from 'class-transformer';
@@ -22,6 +22,53 @@ export class TicketService {
     @InjectRepository(Event)
     private readonly eventRepo: Repository<Event>,
   ) {}
+
+  async createTicketFromEvent(
+    ticketTypeDto: TicketTypeDto,
+    eventId: string,
+  ): Promise<{ id: string; name: string; eventId: string; status: string }> {
+    try {
+      // Validate sale times if provided
+      if (ticketTypeDto.startSaleTime && ticketTypeDto.endSaleTime) {
+        const startTime = new Date(ticketTypeDto.startSaleTime);
+        const endTime = new Date(ticketTypeDto.endSaleTime);
+
+        if (startTime >= endTime) {
+          throw new BadRequestException(
+            'Thời gian kết thúc bán phải sau thời gian bắt đầu',
+          );
+        }
+      }
+
+      // Create ticket type
+      const ticketTypeData: Partial<TicketType> = {
+        eventId: eventId,
+        name: ticketTypeDto.name,
+        type: ticketTypeDto.type || TicketTypeEntity.REGULAR,
+        price: ticketTypeDto.price,
+        quantityLimit: ticketTypeDto.quantityLimit,
+        soldQuantity: 0,
+        startSaleTime: ticketTypeDto.startSaleTime
+          ? new Date(ticketTypeDto.startSaleTime)
+          : undefined,
+        endSaleTime: ticketTypeDto.endSaleTime
+          ? new Date(ticketTypeDto.endSaleTime)
+          : undefined,
+        description: ticketTypeDto.description,
+      };
+
+      const savedTicketType = await this.ticketTypeRepo.save(ticketTypeData) as TicketType;
+
+      return {
+        id: savedTicketType.id,
+        name: savedTicketType.name,
+        eventId: savedTicketType.eventId,
+        status: TicketStatus.DRAFT,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async createTicket(
     createTicketDto: CreateTicketDto,

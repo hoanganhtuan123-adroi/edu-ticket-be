@@ -23,7 +23,7 @@ import { IsUUID } from 'class-validator';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Roles(SystemRole.ADMIN)
   @Post('/create')
@@ -41,16 +41,13 @@ export class UsersController {
   @Patch('/update/:id')
   async updateUser(
     @Body() updateAccountDto: UpdateAccountDto,
-    @Param('id') id: number,
-  ): Promise<ApiResponse<object>> {
+    @Param('id') id: string,
+  ): Promise<ApiResponse<null>> {
     const result = await this.userService.updateUser(
       updateAccountDto,
       id,
     );
-    if (!result) {
-      return ApiResponse.error('Cập nhật người dùng thất bại');
-    }
-    return ApiResponse.success(result, 'Cập nhật người dùng thành công');
+    return ApiResponse.success(null, 'Cập nhật người dùng thành công');
   }
 
   @Roles(SystemRole.ADMIN)
@@ -79,7 +76,7 @@ export class UsersController {
     if (!uuidRegex.test(id)) {
       throw new BadRequestException('ID phải là định dạng UUID hợp lệ');
     }
-    
+
     const result = await this.userService.getDetailUserById(id);
     return ApiResponse.success(result, 'Lấy chi tiết người dùng thành công');
   }
@@ -94,7 +91,7 @@ export class UsersController {
     if (!uuidRegex.test(id)) {
       throw new BadRequestException('ID phải là định dạng UUID hợp lệ');
     }
-    
+
     await this.userService.deleteUserById(id);
     return ApiResponse.success(null, 'Xóa người dùng thành công');
   }
@@ -110,7 +107,7 @@ export class UsersController {
     if (!uuidRegex.test(id)) {
       throw new BadRequestException('ID phải là định dạng UUID hợp lệ');
     }
-    
+
     const result = await this.userService.lockUnlockUser(id, lockUserDto.isActive);
     const message = lockUserDto.isActive ? 'Mở khóa tài khoản thành công' : 'Khóa tài khoản thành công';
     return ApiResponse.success(result, message);

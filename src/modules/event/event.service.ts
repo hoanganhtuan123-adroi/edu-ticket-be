@@ -17,6 +17,7 @@ import { EventStatus } from '../../models/enums';
 import { SlugUtil } from '../../common/utils/slug.util';
 import { UserService } from '../user/user.service';
 import { MinioService } from '../../venders/minio/minio.service';
+import { TicketService } from '../ticket/ticket.service';
 
 @Injectable()
 export class EventService {
@@ -27,6 +28,7 @@ export class EventService {
     private readonly categoryRepo: Repository<Category>,
     private readonly userService: UserService,
     private readonly minioService: MinioService,
+    private readonly ticketService: TicketService,
   ) {}
 
   async createEvent(
@@ -95,6 +97,10 @@ export class EventService {
       if (createEventDto.ticketTypes && createEventDto.ticketTypes.length > 0) {
         try {
           for (const ticketType of createEventDto.ticketTypes) {
+            await this.ticketService.createTicketFromEvent(
+              ticketType,
+              newEvent.id,
+            );
           }
         } catch (ticketError) {
           // If ticket creation fails, we should rollback the event creation
@@ -146,6 +152,59 @@ export class EventService {
       const [events, total] = await this.eventRepo.findAndCount({
         where:
           Object.keys(whereConditions).length > 0 ? whereConditions : undefined,
+        skip: query.offset,
+        take: query.limit,
+        order: { createdAt: 'DESC' },
+        relations: ['category', 'organizer'],
+      });
+
+      const eventDtos = plainToInstance(EventResponseDto, events, {
+        excludeExtraneousValues: true,
+      });
+
+      return PaginationResponseDto.create(
+        eventDtos,
+        total,
+        query.limit,
+        query.offset,
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getEventsByOrganizer(query: {
+    limit: number;
+    offset: number;
+    title?: string;
+    location?: string;
+    status?: EventStatus;
+    categoryId?: string;
+    organizerId: string;
+  }): Promise<PaginationResponseDto<EventResponseDto>> {
+    try {
+      const whereConditions: any = {
+        organizer: { id: query.organizerId }
+      };
+
+      if (query.title) {
+        whereConditions.title = query.title;
+      }
+
+      if (query.location) {
+        whereConditions.location = query.location;
+      }
+
+      if (query.status) {
+        whereConditions.status = query.status;
+      }
+
+      if (query.categoryId) {
+        whereConditions.categoryId = parseInt(query.categoryId);
+      }
+
+      const [events, total] = await this.eventRepo.findAndCount({
+        where: whereConditions,
         skip: query.offset,
         take: query.limit,
         order: { createdAt: 'DESC' },

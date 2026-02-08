@@ -20,7 +20,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) {}
+  ) { }
 
   async findById(id: string): Promise<User | null> {
     return this.userRepo.findOne({ where: { id } });
@@ -28,15 +28,15 @@ export class UserService {
 
   async validateOrganizer(userId: string): Promise<User> {
     const user = await this.findById(userId);
-    
+
     if (!user) {
       throw new NotFoundException('Người dùng không tồn tại');
     }
-    
+
     if (!user.isActive) {
       throw new BadRequestException('Tài khoản đã bị khóa, không thể tạo sự kiện');
     }
-    
+
     return user;
   }
 
@@ -80,8 +80,8 @@ export class UserService {
 
   async updateUser(
     updateDto: UpdateAccountDto,
-    userId: number,
-  ): Promise<User | null> {
+    userId: string,
+  ): Promise<void> {
     try {
       const user = await this.userRepo.findOne({
         where: { id: userId.toString() },
@@ -111,7 +111,7 @@ export class UserService {
 
       const updatedUser = this.userRepo.merge(user, updateDto);
 
-      return await this.userRepo.save(updatedUser);
+      await this.userRepo.save(updatedUser);
     } catch (error) {
       throw error;
     }

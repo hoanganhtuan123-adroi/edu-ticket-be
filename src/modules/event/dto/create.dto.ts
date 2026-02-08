@@ -10,7 +10,7 @@ import {
   IsArray,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { CreateTicketDto } from '../../ticket/dto/create.dto';
+import { TicketTypeDto } from '../../ticket/dto/create.dto';
 
 export class CreateEventDto {
   @IsNotEmpty({ message: 'ID danh mục không được để trống' })
@@ -47,10 +47,10 @@ export class CreateEventDto {
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => CreateTicketDto)
+  @Type(() => TicketTypeDto)
   @IsArray()
   @ArrayMinSize(1, { message: 'Phải có ít nhất một loại vé' })
-  ticketTypes?: CreateTicketDto[];
+  ticketTypes?: TicketTypeDto[];
 
   @IsOptional()
   settings?: string | Record<string, any>;
