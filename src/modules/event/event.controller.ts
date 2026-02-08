@@ -81,8 +81,9 @@ export class EventController {
     }
   }
 
+  @Roles(SystemRole.ORGANIZER)
   @Get()
-  async getAllEvents(
+  async getAllEventsForOrganizer(
     @Query() filter: FilterEventDto,
   ): Promise<ApiResponse<PaginationResponseDto<EventResponseDto>>> {
     try {

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 import { SystemRole } from '../../models/enums';
+import { hashPassword } from '../../common/utils/hash.utils';
 
 @Module({
   imports: [UserModule],
@@ -29,8 +30,9 @@ export class InitiationModule implements OnApplicationBootstrap {
       }
 
       // Create admin account
+      const hashedPassword = await hashPassword(adminPassword);
       await this.userService.createDefaultAccount({
-        password: adminPassword,
+        password: hashedPassword,
         email: adminEmail,
         fullname: adminFullName,
         role: SystemRole.ADMIN,

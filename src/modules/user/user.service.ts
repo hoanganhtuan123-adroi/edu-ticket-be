@@ -50,7 +50,7 @@ export class UserService {
     try {
       const user = await this.userRepo.findOne({
         where: [
-          { studentCode: createAccountDto.username },
+          { studentCode: createAccountDto.studentCode },
           { email: createAccountDto.email },
         ],
       });
@@ -65,7 +65,7 @@ export class UserService {
         password: hashedPassword,
         email: createAccountDto.email,
         fullName: createAccountDto.fullName,
-        studentCode: createAccountDto.studentCode || createAccountDto.username,
+        studentCode: createAccountDto.studentCode,
         systemRole: createAccountDto.role,
         faculty: createAccountDto.faculty,
       });
@@ -243,10 +243,9 @@ export class UserService {
       return;
     }
 
-    const hashedPassword = await hashPassword(data.password);
     await this.userRepo.save({
       email: data.email,
-      password: hashedPassword,
+      password: data.password, // Password is already hashed
       fullName: data.fullname,
       phoneNumber: '0355352525', // Default phone for admin
       systemRole: data.role,

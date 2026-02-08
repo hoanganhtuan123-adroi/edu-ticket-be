@@ -20,23 +20,23 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let message = 'Internal server error';
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus(); 
-      const exResponse = exception.getResponse(); 
+      status = exception.getStatus();
+      const exResponse = exception.getResponse();
       message =
         typeof exResponse === 'string'
-          ? exResponse 
-          : (exResponse as any).message || message; 
+          ? exResponse
+          : (exResponse as any).message || message;
     } else if (exception instanceof BadRequestException) {
       status = 400;
-      message = 'Validation failed'; 
-      const exResponse = exception.getResponse() as any; 
+      message = 'Validation failed';
+      const exResponse = exception.getResponse() as any;
       if (Array.isArray(exResponse)) {
         message = exResponse
           .map((err: any) => `${err.field}: ${err.errors.join(', ')}`)
           .join('; ');
       }
     } else if (exception instanceof QueryFailedError) {
-      message = (exception as any).message || 'Database error'; 
+      message = (exception as any).message || 'Database error';
     }
 
     const apiResponse = ApiResponse.error<any>(message);
